@@ -1,0 +1,26 @@
+---
+package:
+  name: stackanetes/nova-novncproxy
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: nova-novncproxy
+  license: MIT
+
+variables:
+  image: quay.io/stackanetes/centos-binary-nova-novncproxy:2.0.0
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  node_port: 32000
+  private_interface: eth0
+  public_interface: eth0
+
+resources:
+  - file: nova-novncproxy-dp.yaml
+    name: nova-novncproxy
+    type: deployment
+
+  - file: nova-novncproxy-svc.yaml
+    name: nova-novncproxy
+    type: svc
+
+deploy:
+  - name: $self

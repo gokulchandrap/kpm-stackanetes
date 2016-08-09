@@ -1,0 +1,58 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zookeeper
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        zookeeper_node: "%(shard)s"
+    spec:
+      nodeSelector:
+        persistent-control: 'yes'
+      containers:
+        - image: {{image}}
+          name: zookeeper
+          env:
+            - name: MYID
+              value: "%(shard)s"
+          command:
+            - bash
+            - "-c"
+            - >-
+              mkdir -p /opt/zookeeper/conf
+
+              mkdir -p /var/lib/zookeeper/
+
+              echo "$MYID" > /var/lib/zookeeper/myid
+              {%% for shard in kpmshards %%}
+              {%% if shard.name == name %%}
+              echo "server.{{shard.name}}=0.0.0.0:2888:3888" > /opt/zookeeper/conf/zoo.cfg
+              {%% else %%}
+              echo "server.{{shard.name}}=zookeeper-{{shard.name}}.{{namespace}}.svc.cluster.local:2888:3888" >> /opt/zookeeper/conf/zoo.cfg
+              {%% endif %%}
+              {%% endfor %%}
+              echo "dataDir=/var/lib/zookeeper" >> /opt/zookeeper/conf/zoo.cfg
+
+              echo "clientPort=2181" >> /opt/zookeeper/conf/zoo.cfg
+
+              echo "initLimit=10" >> /opt/zookeeper/conf/zoo.cfg
+
+              echo "syncLimit=6" >> /opt/zookeeper/conf/zoo.cfg
+
+              sleep 20
+
+              /opt/zookeeper/bin/zkServer.sh start-foreground
+
+          ports:
+            - containerPort: 2181
+              name: zookeeper1
+              protocol: TCP
+            - containerPort: 2888
+              name: zookeeper2
+              protocol: TCP
+            - containerPort: 3888
+              name: zookeeper3
+              protocol: TCP

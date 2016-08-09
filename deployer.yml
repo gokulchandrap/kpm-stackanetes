@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: stackanetes
+  name: stackanetes-deployer
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - name: stackanetes-base
+    #insert a valid image name
+    imagePullPolicy: Always
+    image: quay.io/ant31/stackanetes:canary
+    env:
+    - name: HOST_INTERFACE
+      value: "eth0" #name of physical interface for compute-node
+    - name: DOCKER_REGISTRY
+      value: "quay.io/stackanetes"
+    - name: IMAGE_VERSION
+      value: "zkless"
+    - name: DNS_IP
+      value: "10.3.240.10"
+    - name: CLUSTER_NAME
+      value: "cluster.local"
+    - name: EXTERNAL_IP
+      value: "104.199.132.46"
+    - name: NAMESPACE
+      value: "stackanetes"
+    - name: IMAGE_PREFIX
+      value: ""
+    - name: CEPH_MONS
+      value: ""
+    - name: CEPH_ADMIN_KEYRING
+      value: ""
+    - name: CEPH_ENABLED
+      value: "true"

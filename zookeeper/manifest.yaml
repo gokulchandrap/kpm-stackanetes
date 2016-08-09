@@ -1,0 +1,35 @@
+---
+package:
+  name: stackanetes/zookeeper
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: zookeeper
+  license: MIT
+
+variables:
+  image: jplock/zookeeper
+  kpmshards: "{{$.shards}}"
+
+resources:
+  - file: zookeeper-member-dp.yaml
+    name: zookeeper
+    type: deployment
+    sharded: 3
+
+  - file: zookeeper-member-svc.yaml
+    name: zookeeper
+    type: svc
+    sharded: 3
+
+  - file: zookeeper-svc.yaml
+    name: zookeeper
+    type: svc
+
+shards:
+  - name: 1
+  - name: 2
+  - name: 3
+
+
+deploy:
+  - name: $self

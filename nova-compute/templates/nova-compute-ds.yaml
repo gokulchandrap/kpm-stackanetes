@@ -1,0 +1,244 @@
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: compute-node
+spec:
+  template:
+    metadata:
+      labels:
+        app: compute-node
+      name: compute-node
+    spec:
+      hostPID: true
+      nodeSelector:
+        compute: 'yes'
+      securityContext:
+        runAsUser: 0
+      hostNetwork: true
+      dnsPolicy: ClusterFirst
+      volumes:
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: var-lib-nova
+          hostPath:
+            path: /var/lib/nova
+        - name: var-lib-libvirt
+          hostPath:
+            path: /var/lib/libvirt
+        - name: run
+          hostPath:
+            path: /run
+        - name: resolv
+          configMap:
+            name: openstack-resolvconf
+            items:
+              - key: resolv.conf
+                path: resolv.conf
+        - name: cgroup
+          hostPath:
+            path: /sys/fs/cgroup
+      containers:
+        - name: nova-compute
+          securityContext:
+            privileged: true
+          image: {{image}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/openstack/nova/nova-compute
+          volumeMounts:
+            - mountPath: /etc/resolv
+              name: resolv
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - mountPath: /var/lib/nova
+              name: var-lib-nova
+            - mountPath: /var/lib/libvirt
+              name: var-lib-libvirt
+            - mountPath: /run
+              name: run
+            - mountPath: /sys/fs/cgroup
+              name: cgroup
+              readOnly: false
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "cp"
+                  - "/etc/resolv/resolv.conf"
+                  - "/etc/resolv.conf"
+
+        - name: nova-libvirt
+          securityContext:
+            privileged: true
+          image: {{image_libvirt}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/openstack/nova/nova-libvirt
+          volumeMounts:
+            - mountPath: /etc/resolv
+              name: resolv
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - mountPath: /var/lib/nova
+              name: var-lib-nova
+            - mountPath: /var/lib/libvirt
+              name: var-lib-libvirt
+            - mountPath: /run
+              name: run
+            - mountPath: /sys/fs/cgroup
+              name: cgroup
+              readOnly: false
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "cp"
+                  - "/etc/resolv/resolv.conf"
+                  - "/etc/resolv.conf"
+
+        - name: neutron-openvswitch-agent
+          command:
+            - bash
+            - "-c"
+            - >-
+              ovs-vsctl add-br br-ex
+
+              sudo -E -u neutron kolla_start
+          securityContext:
+            privileged: true
+          image: {{image_ovs_agent}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/openstack/neutron/neutron-openvswitch-agent
+          volumeMounts:
+            - mountPath: /etc/resolv
+              name: resolv
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - mountPath: /run
+              name: run
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "cp"
+                  - "/etc/resolv/resolv.conf"
+                  - "/etc/resolv.conf"
+
+        - name: openvswitch-db-server
+          securityContext:
+            privileged: true
+          image: {{image_ovs_db}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/infra/openvswitch/openvswitch-db
+          volumeMounts:
+            - mountPath: /etc/resolv
+              name: resolv
+            - mountPath: /run
+              name: run
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "cp"
+                  - "/etc/resolv/resolv.conf"
+                  - "/etc/resolv.conf"
+
+        - name: openvswitch-vswitchd
+          securityContext:
+            privileged: true
+          image: {{image_ovs_vswitchd}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/infra/openvswitch/openvswitch-vswitchd
+          volumeMounts:
+            - mountPath: /etc/resolv
+              name: resolv
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: true
+            - mountPath: /run
+              name: run
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "cp"
+                  - "/etc/resolv/resolv.conf"
+                  - "/etc/resolv.conf"

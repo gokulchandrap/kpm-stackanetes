@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+      name: rabbitmq
+    spec:
+      nodeSelector:
+        persistent-control: 'yes'
+      containers:
+        - name: rabbitmq
+          image: {{image}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/infra/rabbitmq/rabbitmq
+          ports:
+            - containerPort: 5672
+              name: rabbitmq
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/log/rabbitmq
+              name: rabbitmq-log
+      volumes:
+        - name: rabbitmq-log
+          emptyDir: {}

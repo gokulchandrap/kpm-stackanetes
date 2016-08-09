@@ -1,0 +1,26 @@
+---
+package:
+  name: stackanetes/horizon
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: horizon
+  license: MIT
+
+variables:
+  image: quay.io/stackanetes/centos-binary-horizon:2.0.0
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  http_nodePort: 31000
+  private_interface: eth0
+  public_interface: eth0
+
+resources:
+  - file: horizon-dp.yaml
+    name: horizon
+    type: deployment
+
+  - file: horizon-svc.yaml
+    name: horizon
+    type: svc
+
+deploy:
+  - name: $self

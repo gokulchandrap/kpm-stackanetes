@@ -1,0 +1,31 @@
+---
+package:
+  name: stackanetes/glance-api
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: glance-api
+  license: MIT
+
+variables:
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  image: quay.io/stackanetes/centos-binary-glance-api:2.0.0
+
+  private_interface: eth0
+  public_interface: eth0
+
+  volumes:
+    - name: var-lib
+      hostPath:
+        path:  /var/lib/glance
+
+resources:
+  - file: glance-api-dp.yaml
+    name: glance-api
+    type: deployment
+
+  - file: glance-api-svc.yaml
+    name: glance-api
+    type: svc
+
+deploy:
+  - name: $self

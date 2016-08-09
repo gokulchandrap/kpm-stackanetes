@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: neutron-server
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: neutron-server
+      name: neutron-server
+    spec:
+      nodeSelector:
+        non-persistent-control: 'yes'
+      containers:
+        - name: neutron-server
+          command:
+          image: {{image}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/openstack/neutron/neutron-server
+          ports:
+          - containerPort: 9696
+            name: glance-api1
+            protocol: TCP

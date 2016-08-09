@@ -1,0 +1,25 @@
+---
+package:
+  name: stackanetes/nova-api
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: nova-api
+  license: MIT
+
+variables:
+  image: quay.io/stackanetes/centos-binary-nova-api:2.0.0
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  private_interface: eth0
+  public_interface: eth0
+
+resources:
+  - file: nova-api-dp.yaml
+    name: nova-api
+    type: deployment
+
+  - file: nova-api-svc.yaml
+    name: nova-api
+    type: svc
+
+deploy:
+  - name: $self

@@ -1,0 +1,25 @@
+---
+package:
+  name: stackanetes/neutron-server
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: neutron-server
+  license: MIT
+
+variables:
+  image: quay.io/stackanetes/centos-binary-neutron-server:2.0.0
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  private_interface: eth0
+  public_interface: eth0
+
+resources:
+  - file: neutron-server-dp.yaml
+    name: neutron-server
+    type: deployment
+
+  - file: neutron-server-svc.yaml
+    name: neutron-server
+    type: svc
+
+deploy:
+  - name: $self

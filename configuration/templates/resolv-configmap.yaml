@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openstack-resolvconf
+data:
+  resolv.conf: |-
+    search {{namespace}}.svc.cluster.local svc.cluster.local cluster.local
+    nameserver {{dns_server}}
+    options ndots:5

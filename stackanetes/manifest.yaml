@@ -1,0 +1,62 @@
+---
+package:
+  name: stackanetes/stackanetes
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: stackanetes
+  license: MIT
+
+variables:
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  public_interface: eth0
+  private_interface: eth0
+
+
+deploy:
+  - name: kpm.sh/stackanetes/configuration
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/zookeeper
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/rabbitmq
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/nova-scheduler
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/nova-novncproxy
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/nova-consoleauth
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/nova-conductor
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/nova-compute
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/nova-api
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/neutron-server
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/network
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/mariadb
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/horizon
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/glance-api
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/glance-registry
+    variables: "{{$.variables}}"
+
+  - name: kpm.sh/stackanetes/keystone-api
+    variables: "{{$.variables}}"

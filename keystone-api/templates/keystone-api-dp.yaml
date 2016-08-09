@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: keystone-api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: keystone-api
+      name: keystone-api
+    spec:
+      nodeSelector:
+        non-persistent-control: 'yes'
+      containers:
+        - name: keystone-api
+          image: quay.io/stackanetes/centos-binary-keystone:2.0.0
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/openstack/keystone/keystone-api
+          ports:
+          - containerPort: 5000
+            name: keystone-api1
+            protocol: TCP
+          - containerPort: 35357
+            name: keystone-api2
+            protocol: TCP

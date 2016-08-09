@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: glance-api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: glance-api
+      name: glance-api
+    spec:
+      nodeSelector:
+        persistent-control: 'yes'
+      volumes: {{volumes}}
+      containers:
+        - name: glance-api
+          image: {{image}}
+          env:
+            - name: KOLLA_SKIP_EXTEND_START
+              value: ""
+            - name: KOLLA_CONFIG_STRATEGY
+              value: COPY_ONCE
+            - name: KOLLA_CONFIG
+              value: '{"command": "kolla_mesos_start","config_files":[{"source": "zk://{{zk_host}}/kolla/common/kolla_mesos_start.py","dest": "/usr/local/bin/kolla_mesos_start","owner": "root","perm": "0755"}]}'
+            - name: KOLLA_LOGLEVEL
+              value: info
+            - name: KOLLA_ZK_HOSTS
+              value: {{zk_host}}
+            - name: KOLLA_PRIVATE_INTERFACE
+              value: {{private_interface}}
+            - name: KOLLA_PUBLIC_INTERFACE
+              value: {{public_interface}}
+            - name: ZK_APP_ID
+              value: /root/openstack/glance-api/glance-api
+          ports:
+          - containerPort: 9292
+            name: glance-api1
+            protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/glance
+              name: var-lib

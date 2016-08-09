@@ -1,0 +1,41 @@
+---
+package:
+  name: stackanetes/init
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: init
+  license: MIT
+
+variables:
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  private_interface: eth0
+  public_interface: eth0
+
+resources:
+  - file: zookeeper-init.yml
+    name: zookeeper-init
+    type: pod
+
+  - file: glance-init.yml
+    name: glance-init
+    type: pod
+
+  - file: keystone-init.yml
+    name: keystone-init
+    type: pod
+
+  - file: neutron-init.yml
+    name: neutron-init
+    type: pod
+
+  - file: nova-init.yml
+    name: nova-init
+    type: pod
+
+  - file: keystone-db-sync.yml
+    name: keystone-db-sync
+    type: pod
+
+
+deploy:
+  - name: $self

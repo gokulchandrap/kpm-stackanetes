@@ -1,0 +1,29 @@
+---
+package:
+  name: stackanetes/network
+  author: Antoine Legrand
+  version: 2.0.0-2
+  description: network
+  license: MIT
+
+variables:
+  image: quay.io/stackanetes/centos-binary-network:2.0.0
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+
+  image_neutron_dhcp: quay.io/stackanetes/centos-binary-neutron-dhcp-agent:2.0.0
+  image_neutron_metadata: quay.io/stackanetes/centos-binary-neutron-metadata-agent:2.0.0
+  image_neutron_l3: quay.io/stackanetes/centos-binary-neutron-l3-agent:2.0.0
+  image_ovs_db: quay.io/stackanetes/centos-binary-openvswitch-db-server:2.0.0
+  image_ovs_agent: quay.io/stackanetes/centos-binary-neutron-openvswitch-agent:2.0.0
+  image_ovs_vswitchd: quay.io/stackanetes/centos-binary-openvswitch-vswitchd:2.0.0
+
+  private_interface: eth0
+  public_interface: eth0
+
+resources:
+  - file: network-node-ds.yaml
+    name: network-node
+    type: ds
+
+deploy:
+  - name: $self

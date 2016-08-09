@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: stackanetes
+  name: stackanetes-deployer
+spec:
+  restartPolicy: OnFailure
+  containers:
+  - name: stackanetes-base
+    #insert a valid image name
+    image: quay.io/ant31/stackanetes-deployer:v0.0.1
+    env:
+    - name: HOST_INTERFACE
+      value: "{{public_interface}}" #name of physical interface for compute-node
+    - name: ZK_HOST
+      value: {{zk_host}}

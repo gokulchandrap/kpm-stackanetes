@@ -1,0 +1,29 @@
+---
+package:
+  name: stackanetes/mariadb
+  author: Antoine Legrand
+  version: 2.0.0-1
+  description: mariadb
+  license: MIT
+
+variables:
+  private_interface: eth0
+  public_interface: eth0
+  image: quay.io/stackanetes/centos-binary-mariadb:2.0.0
+  zk_host: zookeeper.{{namespace}}.svc.cluster.local:2181
+  volumes:
+    - name: mariadb
+      hostPath:
+        path: /var/lib/mysql
+
+resources:
+  - file: mariadb-dp.yaml
+    name: mariadb
+    type: deployment
+
+  - file: mariadb-svc.yaml
+    name: mariadb
+    type: svc
+
+deploy:
+  - name: $self
